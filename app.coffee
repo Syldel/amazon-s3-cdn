@@ -2,6 +2,7 @@ AWS = require 'aws-sdk'
 fs = require 'fs'
 q = require 'q'
 find = require 'find'
+path = require 'path'
 
 module.exports = class S3App
 
@@ -92,9 +93,8 @@ module.exports = class S3App
 
     # Just keep the filename with extension of the path!
     localDirUnslashes = @params.localDir.replace /\//gi, '\\'
-    fileNameWithExt = pPath.replace localDirUnslashes, ''
-    if fileNameWithExt.substr(0, 1) is '/' or fileNameWithExt.substr(0, 1) is '\\'
-      fileNameWithExt = fileNameWithExt.substring 1
+    targetPath = pPath.replace localDirUnslashes, ''
+    fileNameWithExt = path.basename targetPath
     console.log 'uploadFile', @params.subDir + '/' + fileNameWithExt
 
     if @params.subDir and @params.s3Bucket

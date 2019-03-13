@@ -1,6 +1,6 @@
 {
     "name": "amazon-s3-cdn",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Upload files to Amazon S3 bucket",
     "main": "app.js",
     "repository": {
@@ -23,6 +23,7 @@
         "coffeescript": "^2.3.2",
         "find": "^0.3.0",
         "fs": "0.0.1-security",
+        "path": "^0.12.7",
         "q": "^1.5.1"
     },
     "homepage": "https://github.com/Syldel/amazon-s3-cdn#readme",
