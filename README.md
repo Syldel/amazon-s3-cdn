@@ -9,9 +9,10 @@ npm install amazon-s3-cdn --save
 ```
 
 ### To launch the script use :
-`"s3cdn": "amazon-s3-cdn --config ./s3-config.js"`
+`"s3cdn": "amazon-s3-cdn --config ../../s3-config.js"`
 
-DON'T FORGET TO DEFINE YOUR "s3-config.js" FILE!
+DON'T FORGET TO DEFINE YOUR "s3-config.js" FILE!!!
+AND DEFINE YOUR AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_REGION, AWS_S3_BUCKET, etc.
 
 ### Pour installer en sous-module git dans votre dépôt principal :
 `git submodule add https://github.com/Syldel/amazon-s3-cdn`

@@ -10,25 +10,24 @@ module.exports = class S3App
 
     args = process.argv.slice 2
     if args[0] is '--config' and args[1]
-      if fs.existsSync args[1]
-        @params = require args[1]
 
-        console.log 'Init S3 client'
-        @awsS3Client = new AWS.S3 @params.s3Options
+      @params = require args[1]
 
-        console.log 'Delete S3 subdirectory ' + @params.subDir + '/'
-        @listS3BucketObject(@params.subDir + '/').then (contents) =>
-          contents = contents.map (object) ->
-            object =
-              Key: object.Key
-          @deleteFiles(contents).then (deleted) =>
-            console.log 'deleted:', deleted
+      console.log 'Init S3 client'
+      @awsS3Client = new AWS.S3 @params.s3Options
 
-            @extensionsUploadSequence @params.fileExtensions
-            .then () ->
-              console.log '\nUpload COMPLETE'
-      else
-        console.log 'Configuration error: "' + args[1] + '" is not a file!'
+      console.log 'Delete S3 subdirectory ' + @params.subDir + '/'
+      @listS3BucketObject(@params.subDir + '/').then (contents) =>
+        contents = contents.map (object) ->
+          object =
+            Key: object.Key
+        @deleteFiles(contents).then (deleted) =>
+          console.log 'deleted:', deleted
+
+          @extensionsUploadSequence @params.fileExtensions
+          .then () ->
+            console.log '\nUpload COMPLETE'
+
     else
       console.log 'Configuration error (Don\'t forget to add --config arg)'
 

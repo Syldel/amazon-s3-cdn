@@ -16,27 +16,23 @@
       console.log('NODE_ENV:', process.env.NODE_ENV);
       args = process.argv.slice(2);
       if (args[0] === '--config' && args[1]) {
-        if (fs.existsSync(args[1])) {
-          this.params = require(args[1]);
-          console.log('Init S3 client');
-          this.awsS3Client = new AWS.S3(this.params.s3Options);
-          console.log('Delete S3 subdirectory ' + this.params.subDir + '/');
-          this.listS3BucketObject(this.params.subDir + '/').then((contents) => {
-            contents = contents.map(function(object) {
-              return object = {
-                Key: object.Key
-              };
-            });
-            return this.deleteFiles(contents).then((deleted) => {
-              console.log('deleted:', deleted);
-              return this.extensionsUploadSequence(this.params.fileExtensions).then(function() {
-                return console.log('\nUpload COMPLETE');
-              });
+        this.params = require(args[1]);
+        console.log('Init S3 client');
+        this.awsS3Client = new AWS.S3(this.params.s3Options);
+        console.log('Delete S3 subdirectory ' + this.params.subDir + '/');
+        this.listS3BucketObject(this.params.subDir + '/').then((contents) => {
+          contents = contents.map(function(object) {
+            return object = {
+              Key: object.Key
+            };
+          });
+          return this.deleteFiles(contents).then((deleted) => {
+            console.log('deleted:', deleted);
+            return this.extensionsUploadSequence(this.params.fileExtensions).then(function() {
+              return console.log('\nUpload COMPLETE');
             });
           });
-        } else {
-          console.log('Configuration error: "' + args[1] + '" is not a file!');
-        }
+        });
       } else {
         console.log('Configuration error (Don\'t forget to add --config arg)');
       }
