@@ -1,6 +1,6 @@
 {
     "name": "amazon-s3-cdn",
-    "version": "1.0.0",
+    "version": "0.1.5",
     "description": "Upload files to Amazon S3 bucket",
     "main": "app.js",
     "repository": {
@@ -26,5 +26,7 @@
         "q": "^1.5.1"
     },
     "homepage": "https://github.com/Syldel/amazon-s3-cdn#readme",
-    "bin": "./app.js"
+    "bin": {
+        "amazon-s3-cdn": "bin/s3cdn.js"
+    }
 }

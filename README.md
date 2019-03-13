@@ -2,7 +2,18 @@
 
 ## Usage / Installation
 
-### Pour installer un sous-module git dans votre dépôt principal :
+### Install like a node_modules :
+
+```sh
+npm install amazon-s3-cdn --save
+```
+
+### To launch the script use :
+`"s3cdn": "amazon-s3-cdn --config ./s3-config.js"`
+
+DON'T FORGET TO DEFINE YOUR "s3-config.js" FILE!
+
+### Pour installer en sous-module git dans votre dépôt principal :
 `git submodule add https://github.com/Syldel/amazon-s3-cdn`
 
 ### Après avoir cloné le projet parent qui contient des sous-modules :
