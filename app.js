@@ -70,7 +70,13 @@
         defaultCDNBase: this.params.cdnDomain + '/' + this.params.subDir,
         allowRev: true,
         allowMin: true,
-        files: pFiles
+        files: pFiles,
+        matchers: [
+          {
+            pattern: /(url\(['"]?)([a-zA-Z-_.0-9]+)([\?|#]?[^)]*['"]?\))/gi,
+            fallback: false
+          }
+        ]
       });
     }
 

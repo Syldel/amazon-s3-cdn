@@ -60,6 +60,9 @@ module.exports = class S3App
       allowRev: yes
       allowMin: yes
       files: pFiles
+      matchers: [
+        { pattern: /(url\(['"]?)([a-zA-Z-_.0-9]+)([\?|#]?[^)]*['"]?\))/gi, fallback: false }
+      ]
 
 
   getFilesByExtensionsSequence: (pExtensions, pIndex = 0) ->
