@@ -4,6 +4,7 @@ q = require 'q'
 find = require 'find'
 path = require 'path'
 cdnizerFactory = require 'cdnizer'
+mime = require 'mime'
 
 module.exports = class S3App
 
@@ -173,7 +174,7 @@ module.exports = class S3App
     deferred = q.defer()
 
     fileNameWithExt = @getFilename pPath
-    console.log 'uploadFile', @params.subDir + '/' + fileNameWithExt
+    console.log 'uploadFile', @params.subDir + '/' + fileNameWithExt + ' (' + mime.getType(pPath) + ')'
 
     if @params.subDir and @params.s3Bucket
       fs.readFile pPath, (err, fileData) =>
@@ -181,7 +182,7 @@ module.exports = class S3App
           ACL: 'public-read'
           Key: @params.subDir + '/' + fileNameWithExt
           Body: fileData
-          ContentType: 'binary'
+          ContentType: mime.getType(pPath)
           Bucket: @params.s3Bucket
           #Tagging: (For example, "Key1=Value1")
 
