@@ -1,5 +1,9 @@
 # Amazon S3 project
 
+## Presentation
+
+This module updates paths in your distribution browser files (.html, .css, .js) to target a CDN domain then upload files to an Amaszon S3 bucket.
+
 ## Usage / Installation
 
 ### Install like a node_modules :

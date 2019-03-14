@@ -3,6 +3,7 @@ fs = require 'fs'
 q = require 'q'
 find = require 'find'
 path = require 'path'
+cdnizerFactory = require 'cdnizer'
 
 module.exports = class S3App
 
@@ -14,23 +15,68 @@ module.exports = class S3App
 
       @params = require args[1]
 
-      console.log 'Init S3 client'
-      @awsS3Client = new AWS.S3 @params.s3Options
-
-      console.log 'Delete S3 subdirectory ' + @params.subDir + '/'
-      @listS3BucketObject(@params.subDir + '/').then (contents) =>
-        contents = contents.map (object) ->
-          object =
-            Key: object.Key
-        @deleteFiles(contents).then (deleted) =>
-          console.log 'deleted:', deleted
-
-          @extensionsUploadSequence @params.fileExtensions
-          .then () ->
-            console.log '\nUpload COMPLETE'
+      @cdnizerProcessus().then () =>
+        console.log '@cdnizerProcessus() COMPLETE'
+        @s3Processus()
 
     else
       console.log 'Configuration error (Don\'t forget to add --config arg)'
+
+
+  cdnizerProcessus: () ->
+    deferred = q.defer()
+
+    @getFilesByExtensionsSequence @params.fileExtensions
+    .then (files) =>
+      filenames = files.map (f) =>
+        @getFilename f
+      @initCdnizer filenames
+
+      @getFilesByExtensionsSequence ['html', 'js', 'css']
+      .then (tFiles) =>
+        for file in tFiles
+          contents = fs.readFileSync file, 'utf8'
+          newContents = @cdnizer contents
+          fs.writeFileSync file, newContents
+
+        deferred.resolve()
+      , (err) ->
+        deferred.reject err
+    , (err) ->
+      deferred.reject err
+
+    deferred.promise
+
+
+  initCdnizer: (pFiles) ->
+    @cdnizer = cdnizerFactory
+      defaultCDNBase: @params.cdnDomain + '/' + @params.subDir
+      allowRev: yes
+      allowMin: yes
+      files: pFiles
+
+
+  getFilesByExtensionsSequence: (pExtensions, pIndex = 0) ->
+    deferred = q.defer()
+
+    if pIndex > pExtensions.length - 1
+      deferred.resolve []
+    else
+      console.log '\nFind local ' + pExtensions[pIndex] + ' files'
+      @findFilesByExtension pExtensions[pIndex], @params.localDir
+      .then (filesA) =>
+        @getFilesByExtensionsSequence pExtensions, pIndex + 1
+        .then (filesB) ->
+          filesC = filesA.concat filesB
+          deferred.resolve filesC
+        , (err) ->
+          deferred.reject err
+
+      , (err) ->
+        console.log ' @findFilesByExtension err:', err
+        deferred.reject err
+
+    deferred.promise
 
 
   findFilesByExtension: (pExtension, pLocalDir) ->
@@ -41,6 +87,23 @@ module.exports = class S3App
       deferred.resolve files
 
     deferred.promise
+
+
+  s3Processus: () ->
+    console.log '\nInit S3 client'
+    @awsS3Client = new AWS.S3 @params.s3Options
+
+    console.log 'Delete S3 subdirectory ' + @params.subDir + '/'
+    @listS3BucketObject(@params.subDir + '/').then (contents) =>
+      contents = contents.map (object) ->
+        object =
+          Key: object.Key
+      @deleteFiles(contents).then (deleted) =>
+        console.log 'deleted:', deleted
+
+        @extensionsUploadSequence @params.fileExtensions
+        .then () ->
+          console.log '\nUpload COMPLETE'
 
 
   extensionsUploadSequence: (pExtensions, pIndex = 0) ->
@@ -88,13 +151,23 @@ module.exports = class S3App
     deferred.promise
 
 
+  getFilename: (pPath) ->
+    # Just keep the filename with extension of the path!
+    normalizedLocalDir = path.normalize @params.localDir
+
+    fileNameWithExt = path.normalize(pPath).replace normalizedLocalDir, ''
+    if fileNameWithExt.substr(0, 1) is '/' or fileNameWithExt.substr(0, 1) is '\\'
+      fileNameWithExt = fileNameWithExt.substring 1
+
+    fileNameWithExt = fileNameWithExt.replace /\\/gi, '\/'
+
+    fileNameWithExt
+
+
   uploadFile: (pPath) ->
     deferred = q.defer()
 
-    # Just keep the filename with extension of the path!
-    localDirUnslashes = @params.localDir.replace /\//gi, '\\'
-    targetPath = pPath.replace localDirUnslashes, ''
-    fileNameWithExt = path.basename targetPath
+    fileNameWithExt = @getFilename pPath
     console.log 'uploadFile', @params.subDir + '/' + fileNameWithExt
 
     if @params.subDir and @params.s3Bucket

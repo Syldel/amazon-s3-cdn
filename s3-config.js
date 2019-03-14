@@ -7,7 +7,6 @@ config.fileExtensions = [
     'woff',
     'svg',
     'ttf',
-    'woff',
     'eot',
     'ico'
 ];
