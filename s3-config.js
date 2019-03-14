@@ -20,5 +20,6 @@ config.s3Options = {
 config.localDir = '../angular-web-app/dist/browser';
 config.s3Bucket = process.env.AWS_S3_BUCKET;
 config.subDir = process.env.NODE_ENV || 'development';
+config.cdnDomain = '//XXXXXXXXX.cloudfront.net';
 
 module.exports = config;

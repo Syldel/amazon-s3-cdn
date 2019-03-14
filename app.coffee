@@ -8,7 +8,7 @@ cdnizerFactory = require 'cdnizer'
 module.exports = class S3App
 
   constructor: ->
-    console.log 'NODE_ENV:', process.env.NODE_ENV
+    console.log 'Start S3/CDN processus!  NODE_ENV:', process.env.NODE_ENV
 
     args = process.argv.slice 2
     if args[0] is '--config' and args[1]
@@ -16,8 +16,10 @@ module.exports = class S3App
       @params = require args[1]
 
       @cdnizerProcessus().then () =>
-        console.log '@cdnizerProcessus() COMPLETE'
+        console.log 'Cdnizer processus COMPLETE'
         @s3Processus()
+      , (err) ->
+        console.log err
 
     else
       console.log 'Configuration error (Don\'t forget to add --config arg)'
@@ -26,24 +28,27 @@ module.exports = class S3App
   cdnizerProcessus: () ->
     deferred = q.defer()
 
-    @getFilesByExtensionsSequence @params.fileExtensions
-    .then (files) =>
-      filenames = files.map (f) =>
-        @getFilename f
-      @initCdnizer filenames
+    if @params.cdnDomain
+      @getFilesByExtensionsSequence @params.fileExtensions
+      .then (files) =>
+        filenames = files.map (f) =>
+          @getFilename f
+        @initCdnizer filenames
 
-      @getFilesByExtensionsSequence ['html', 'js', 'css']
-      .then (tFiles) =>
-        for file in tFiles
-          contents = fs.readFileSync file, 'utf8'
-          newContents = @cdnizer contents
-          fs.writeFileSync file, newContents
+        @getFilesByExtensionsSequence ['html', 'js', 'css']
+        .then (tFiles) =>
+          for file in tFiles
+            contents = fs.readFileSync file, 'utf8'
+            newContents = @cdnizer contents
+            fs.writeFileSync file, newContents
 
-        deferred.resolve()
+          deferred.resolve()
+        , (err) ->
+          deferred.reject err
       , (err) ->
         deferred.reject err
-    , (err) ->
-      deferred.reject err
+    else
+      deferred.reject 'Error! No CDN domain defined!'
 
     deferred.promise
 

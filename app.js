@@ -17,13 +17,15 @@
   module.exports = S3App = class S3App {
     constructor() {
       var args;
-      console.log('NODE_ENV:', process.env.NODE_ENV);
+      console.log('Start S3/CDN processus!  NODE_ENV:', process.env.NODE_ENV);
       args = process.argv.slice(2);
       if (args[0] === '--config' && args[1]) {
         this.params = require(args[1]);
         this.cdnizerProcessus().then(() => {
-          console.log('@cdnizerProcessus() COMPLETE');
+          console.log('Cdnizer processus COMPLETE');
           return this.s3Processus();
+        }, function(err) {
+          return console.log(err);
         });
       } else {
         console.log('Configuration error (Don\'t forget to add --config arg)');
@@ -33,27 +35,31 @@
     cdnizerProcessus() {
       var deferred;
       deferred = q.defer();
-      this.getFilesByExtensionsSequence(this.params.fileExtensions).then((files) => {
-        var filenames;
-        filenames = files.map((f) => {
-          return this.getFilename(f);
-        });
-        this.initCdnizer(filenames);
-        return this.getFilesByExtensionsSequence(['html', 'js', 'css']).then((tFiles) => {
-          var contents, file, i, len, newContents;
-          for (i = 0, len = tFiles.length; i < len; i++) {
-            file = tFiles[i];
-            contents = fs.readFileSync(file, 'utf8');
-            newContents = this.cdnizer(contents);
-            fs.writeFileSync(file, newContents);
-          }
-          return deferred.resolve();
+      if (this.params.cdnDomain) {
+        this.getFilesByExtensionsSequence(this.params.fileExtensions).then((files) => {
+          var filenames;
+          filenames = files.map((f) => {
+            return this.getFilename(f);
+          });
+          this.initCdnizer(filenames);
+          return this.getFilesByExtensionsSequence(['html', 'js', 'css']).then((tFiles) => {
+            var contents, file, i, len, newContents;
+            for (i = 0, len = tFiles.length; i < len; i++) {
+              file = tFiles[i];
+              contents = fs.readFileSync(file, 'utf8');
+              newContents = this.cdnizer(contents);
+              fs.writeFileSync(file, newContents);
+            }
+            return deferred.resolve();
+          }, function(err) {
+            return deferred.reject(err);
+          });
         }, function(err) {
           return deferred.reject(err);
         });
-      }, function(err) {
-        return deferred.reject(err);
-      });
+      } else {
+        deferred.reject('Error! No CDN domain defined!');
+      }
       return deferred.promise;
     }
 
