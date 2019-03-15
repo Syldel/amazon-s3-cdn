@@ -47,8 +47,43 @@ Lorsqu'un utilisateur demande le contenu que vous proposez avec CloudFront, il e
 
 - Si le contenu ne se trouve pas à cet emplacement périphérique, CloudFront l'extrait d'une origine que vous avez définie — comme un compartiment Amazon S3, un canal MediaPackage ou un serveur HTTP (par exemple, un serveur web), et que vous avez identifiée comme étant la source de la version définitive de votre contenu.
 
-## Example of Cloudfront domain :
-domain: 'd2lftwi5onds8f.cloudfront.net'
+### Example of Cloudfront domain :
+domain: 'xxxxxxxxxxxxxx.cloudfront.net'
 
-## AWS SDK for JavaScript 
+### CORS problems
+Example of error:
+"Access to font at 'https://xxxxxxxxxxxxxx.cloudfront.net/production/glyphicons-halflings-regular.xxxxxxxxxxxxxx.woff' from origin 'https://xxxxxxxxxxxxxx-web-app.herokuapp.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+
+https://stackoverflow.com/questions/12358173/correct-s3-cloudfront-cors-configuration
+
+
+In Amazon S3, go in "Permissions / Autorisations', then "CORS Configuration" and add :
+
+```
+<CORSConfiguration>
+   <CORSRule>
+     <AllowedOrigin>*</AllowedOrigin>
+     <AllowedMethod>GET</AllowedMethod>
+   </CORSRule>
+</CORSConfiguration>
+```
+
+In your CloudFront distribution go to Behavior -> choose a behavior -> Edit
+Enable "Options", then choose "Whitelist" and add :
+- Origin
+- Access-Control-Request-Headers
+- Access-Control-Request-Method
+
+You probably need to Invalid cloudfront cache after that.
+
+### CloudFront gzip compression
+https://docs.aws.amazon.com/fr_fr/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html#compressed-content-cloudfront
+
+In your CloudFront distribution go to Behavior -> choose a behavior -> Edit
+Set "Yes" to "Compresser automatiquement les objets"
+
+### CloudFront Leverage browser caching
+https://docs.aws.amazon.com/fr_fr/AmazonCloudFront/latest/DeveloperGuide/Expiration.html
+
+### AWS SDK for JavaScript 
 https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/

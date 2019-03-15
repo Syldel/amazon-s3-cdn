@@ -1,6 +1,6 @@
 {
     "name": "amazon-s3-cdn",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Upload files to Amazon S3 bucket",
     "main": "app.js",
     "repository": {

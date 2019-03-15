@@ -201,6 +201,7 @@
             Key: this.params.subDir + '/' + fileNameWithExt,
             Body: fileData,
             ContentType: mime.getType(pPath),
+            CacheControl: 'max-age=604800', // 7 days = 604800 seconds
             Bucket: this.params.s3Bucket
           };
           //Tagging: (For example, "Key1=Value1")
